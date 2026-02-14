@@ -120,6 +120,9 @@ ssh "${SSH_OPTS[@]}" "ubuntu@$TARGET_IP" '
     exit 1
   fi
 
+  # Remove an existing standalone container with the same fixed name.
+  docker rm -f openclaw-gateway >/dev/null 2>&1 || true
+
   # Clean up legacy v1 containers that can conflict with the fixed container_name.
   docker ps -a --format "{{.Names}}" | grep -E "openclaw-gateway$" | grep -v "^openclaw-gateway$" | xargs -r docker rm -f
 

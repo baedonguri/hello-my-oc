@@ -6,8 +6,21 @@ packages:
   - awscli
   - jq
 
+write_files:
+  - path: /etc/docker/daemon.json
+    permissions: "0644"
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      }
+
 runcmd:
   - systemctl enable docker
   - systemctl start docker
+  - systemctl restart docker
   - mkdir -p /opt/openclaw
   - echo "cloud-init baseline ready" > /opt/openclaw/STATUS

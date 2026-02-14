@@ -9,14 +9,15 @@ KEY_PATH="${KEY_PATH:-}"
 TARGET_IP="${TARGET_IP:-}"
 OPENCLAW_GATEWAY_TOKEN="${OPENCLAW_GATEWAY_TOKEN:-${OPENCLAW_AUTH_TOKEN:-}}"
 OPENCLAW_IMAGE="${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:2026.2.13}"
+KNOWN_HOSTS_PATH="${KNOWN_HOSTS_PATH:-$HOME/.ssh/known_hosts}"
 
 usage() {
   cat <<'EOF'
-usage: scripts/deploy_openclaw.sh --key <pem-path> [--ip <public-ip>] [--token <gateway-token>] [--image <image>]
+usage: scripts/deploy_openclaw.sh --key <pem-path> [--ip <public-ip>] [--image <image>]
 
 Examples:
   OPENCLAW_GATEWAY_TOKEN=xxx scripts/deploy_openclaw.sh --key ~/.ssh/oh-my-oc-key.pem
-  scripts/deploy_openclaw.sh --key ~/.ssh/oh-my-oc-key.pem --ip 1.2.3.4 --token xxx
+  scripts/deploy_openclaw.sh --key ~/.ssh/oh-my-oc-key.pem --ip 1.2.3.4
 EOF
 }
 
@@ -28,10 +29,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     --ip)
       TARGET_IP="$2"
-      shift 2
-      ;;
-    --token)
-      OPENCLAW_GATEWAY_TOKEN="$2"
       shift 2
       ;;
     --image)
@@ -61,17 +58,34 @@ if [[ ! -f "$KEY_PATH" ]]; then
   exit 1
 fi
 
-if [[ -z "$OPENCLAW_GATEWAY_TOKEN" ]]; then
-  echo "OPENCLAW_GATEWAY_TOKEN is required (env var or --token)" >&2
-  exit 1
-fi
-
 if [[ -z "$TARGET_IP" ]]; then
   TARGET_IP="$(terraform -chdir="$LIVE_DIR" output -raw public_ip)"
 fi
 
 if [[ -z "$TARGET_IP" ]]; then
   echo "failed to resolve target ip" >&2
+  exit 1
+fi
+
+if [[ -z "$OPENCLAW_GATEWAY_TOKEN" ]]; then
+  read -r -s -p "Enter OPENCLAW_GATEWAY_TOKEN: " OPENCLAW_GATEWAY_TOKEN
+  echo
+fi
+
+if [[ -z "$OPENCLAW_GATEWAY_TOKEN" ]]; then
+  echo "OPENCLAW_GATEWAY_TOKEN is required" >&2
+  exit 1
+fi
+
+if [[ ! -f "$KNOWN_HOSTS_PATH" ]]; then
+  echo "known_hosts file not found: $KNOWN_HOSTS_PATH" >&2
+  echo "Run: ssh-keyscan -H $TARGET_IP >> $KNOWN_HOSTS_PATH" >&2
+  exit 1
+fi
+
+if ! ssh-keygen -F "$TARGET_IP" -f "$KNOWN_HOSTS_PATH" >/dev/null; then
+  echo "Host key for $TARGET_IP is not registered in $KNOWN_HOSTS_PATH" >&2
+  echo "Run: ssh-keyscan -H $TARGET_IP >> $KNOWN_HOSTS_PATH" >&2
   exit 1
 fi
 
@@ -87,7 +101,7 @@ EOF
 
 chmod 600 "$KEY_PATH"
 
-SSH_OPTS=(-i "$KEY_PATH" -o StrictHostKeyChecking=accept-new)
+SSH_OPTS=(-i "$KEY_PATH" -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$KNOWN_HOSTS_PATH")
 
 ssh "${SSH_OPTS[@]}" "ubuntu@$TARGET_IP" "sudo mkdir -p /opt/openclaw && sudo chown ubuntu:ubuntu /opt/openclaw"
 scp "${SSH_OPTS[@]}" "$COMPOSE_FILE" "ubuntu@$TARGET_IP:/opt/openclaw/docker-compose.yml"

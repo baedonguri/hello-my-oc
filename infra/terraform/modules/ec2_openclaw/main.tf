@@ -9,13 +9,22 @@ data "aws_subnets" "default" {
   }
 }
 
+locals {
+  ami_architecture = startswith(var.instance_type, "t4g.") ? "arm64" : "x86_64"
+}
+
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"]
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-*-server-*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = [local.ami_architecture]
   }
 }
 

@@ -8,7 +8,13 @@ services:
     ports:
       - "127.0.0.1:18789:18789"
     healthcheck:
-      test: ["CMD", "sh", "-c", "nc -z 127.0.0.1 18789"]
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "const s=require('net').connect(18789,'127.0.0.1');s.on('connect',()=>{s.end();process.exit(0)});s.on('error',()=>process.exit(1));setTimeout(()=>process.exit(1),2000);",
+        ]
       interval: 30s
       timeout: 5s
       retries: 5

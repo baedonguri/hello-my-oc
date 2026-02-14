@@ -16,10 +16,22 @@ provider "aws" {
 resource "aws_s3_bucket" "tf_state" {
   bucket = var.state_bucket_name
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   tags = {
     Project     = var.project_name
     Environment = var.environment
     ManagedBy   = "terraform"
+  }
+}
+
+resource "aws_s3_bucket_ownership_controls" "tf_state" {
+  bucket = aws_s3_bucket.tf_state.id
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
   }
 }
 
@@ -84,6 +96,10 @@ resource "aws_dynamodb_table" "tf_lock" {
   name         = var.lock_table_name
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
+
+  lifecycle {
+    prevent_destroy = true
+  }
 
   attribute {
     name = "LockID"

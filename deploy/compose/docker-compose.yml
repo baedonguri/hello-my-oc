@@ -1,0 +1,14 @@
+services:
+  openclaw-gateway:
+    image: ghcr.io/openclaw/openclaw:latest
+    container_name: openclaw-gateway
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:18789:18789"
+    healthcheck:
+      test: ["CMD", "sh", "-c", "nc -z 127.0.0.1 18789"]
+      interval: 30s
+      timeout: 5s
+      retries: 5

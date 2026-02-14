@@ -1,0 +1,17 @@
+name: terraform-apply
+
+on:
+  workflow_dispatch:
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform init (no backend)
+        run: terraform -chdir=infra/terraform/live/personal init -backend=false
+      - name: Terraform validate
+        run: terraform -chdir=infra/terraform/live/personal validate
+      - name: Placeholder
+        run: echo "Apply will be enabled after AWS auth and backend wiring are configured."

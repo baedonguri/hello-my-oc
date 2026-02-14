@@ -24,3 +24,9 @@ variable "cpu_credit_low_threshold" {
   type    = number
   default = 20
 }
+
+variable "alarm_sns_topic_arn" {
+  description = "SNS topic ARN for alarm notifications. Empty means no notification."
+  type        = string
+  default     = ""
+}

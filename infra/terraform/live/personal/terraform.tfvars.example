@@ -5,3 +5,4 @@ instance_type  = "t4g.small"
 volume_size_gb = 20
 cpu_high_threshold       = 80
 cpu_credit_low_threshold = 20
+alarm_sns_topic_arn      = ""

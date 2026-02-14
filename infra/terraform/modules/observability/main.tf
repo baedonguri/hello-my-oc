@@ -1,3 +1,7 @@
+locals {
+  alarm_actions = var.alarm_sns_topic_arn != "" ? [var.alarm_sns_topic_arn] : []
+}
+
 resource "aws_cloudwatch_metric_alarm" "status_check_failed" {
   alarm_name          = "${var.project_name}-${var.environment}-status-check-failed"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -14,8 +18,8 @@ resource "aws_cloudwatch_metric_alarm" "status_check_failed" {
     InstanceId = var.instance_id
   }
 
-  alarm_actions             = []
-  ok_actions                = []
+  alarm_actions             = local.alarm_actions
+  ok_actions                = local.alarm_actions
   insufficient_data_actions = []
 }
 
@@ -35,8 +39,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_utilization_high" {
     InstanceId = var.instance_id
   }
 
-  alarm_actions             = []
-  ok_actions                = []
+  alarm_actions             = local.alarm_actions
+  ok_actions                = local.alarm_actions
   insufficient_data_actions = []
 }
 
@@ -58,7 +62,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_credit_low" {
     InstanceId = var.instance_id
   }
 
-  alarm_actions             = []
-  ok_actions                = []
+  alarm_actions             = local.alarm_actions
+  ok_actions                = local.alarm_actions
   insufficient_data_actions = []
 }

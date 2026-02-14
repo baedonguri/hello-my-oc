@@ -38,6 +38,7 @@ module "observability" {
   enable_cpu_credit_alarm  = local.is_burstable_instance
   cpu_high_threshold       = var.cpu_high_threshold
   cpu_credit_low_threshold = var.cpu_credit_low_threshold
+  alarm_sns_topic_arn      = var.alarm_sns_topic_arn
 }
 
 output "instance_id" {

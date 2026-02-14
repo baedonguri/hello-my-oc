@@ -3,3 +3,5 @@ environment    = "personal"
 aws_region     = "ap-northeast-2"
 instance_type  = "t4g.small"
 volume_size_gb = 20
+cpu_high_threshold       = 80
+cpu_credit_low_threshold = 20

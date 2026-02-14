@@ -10,7 +10,8 @@ data "aws_subnets" "default" {
 }
 
 locals {
-  ami_architecture = startswith(var.instance_type, "t4g.") ? "arm64" : "x86_64"
+  instance_family  = split(".", var.instance_type)[0]
+  ami_architecture = endswith(local.instance_family, "g") ? "arm64" : "x86_64"
 }
 
 data "aws_ami" "ubuntu" {

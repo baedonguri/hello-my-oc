@@ -1,6 +1,6 @@
 .PHONY: fmt validate preflight plan apply
 
-TF_DIR ?= infra/terraform/live/personal
+TF_DIR ?= infra/terraform/live/production
 
 fmt:
 	terraform -chdir=$(TF_DIR) fmt -recursive

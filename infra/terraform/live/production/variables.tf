@@ -7,7 +7,7 @@ variable "project_name" {
 variable "environment" {
   description = "Environment name"
   type        = string
-  default     = "personal"
+  default     = "production"
 }
 
 variable "aws_region" {
@@ -35,6 +35,17 @@ variable "volume_size_gb" {
   validation {
     condition     = var.volume_size_gb >= 8 && var.volume_size_gb <= 200
     error_message = "volume_size_gb must be between 8 and 200."
+  }
+}
+
+variable "subnet_id" {
+  description = "Subnet ID for EC2 placement. Empty means auto-select."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.subnet_id == "" || can(regex("^subnet-[a-z0-9]+$", var.subnet_id))
+    error_message = "subnet_id must be empty or a valid subnet ID like subnet-abc12345."
   }
 }
 

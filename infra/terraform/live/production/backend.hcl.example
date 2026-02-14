@@ -1,5 +1,5 @@
 bucket         = "replace-with-unique-bucket-name"
-key            = "hello-my-oc/personal/terraform.tfstate"
+key            = "hello-my-oc/production/terraform.tfstate"
 region         = "ap-northeast-2"
 dynamodb_table = "hello-my-oc-tf-lock"
 encrypt        = true

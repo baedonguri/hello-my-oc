@@ -1,17 +1,15 @@
-data "aws_vpc" "default" {
-  default = true
-}
-
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
+data "aws_subnets" "available" {
+  count = var.subnet_id == "" ? 1 : 0
 }
 
 locals {
   instance_family  = split(".", var.instance_type)[0]
   ami_architecture = endswith(local.instance_family, "g") ? "arm64" : "x86_64"
+  selected_subnet  = var.subnet_id != "" ? var.subnet_id : data.aws_subnets.available[0].ids[0]
+}
+
+data "aws_subnet" "selected" {
+  id = local.selected_subnet
 }
 
 data "aws_ami" "ubuntu" {
@@ -32,7 +30,7 @@ data "aws_ami" "ubuntu" {
 resource "aws_security_group" "instance" {
   name        = "${var.project_name}-${var.environment}-sg"
   description = "Private-first security group"
-  vpc_id      = data.aws_vpc.default.id
+  vpc_id      = data.aws_subnet.selected.vpc_id
 
   egress {
     from_port   = 0
@@ -77,7 +75,7 @@ resource "aws_instance" "this" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
   associate_public_ip_address = false
-  subnet_id                   = data.aws_subnets.default.ids[0]
+  subnet_id                   = data.aws_subnet.selected.id
   vpc_security_group_ids      = [aws_security_group.instance.id]
   iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
 

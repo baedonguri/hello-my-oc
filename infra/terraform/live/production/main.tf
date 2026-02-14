@@ -27,6 +27,7 @@ module "ec2_openclaw" {
   environment    = var.environment
   instance_type  = var.instance_type
   volume_size_gb = var.volume_size_gb
+  subnet_id      = var.subnet_id
 }
 
 module "observability" {

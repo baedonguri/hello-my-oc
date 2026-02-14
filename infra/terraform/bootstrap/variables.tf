@@ -18,5 +18,5 @@ variable "project_name" {
 
 variable "environment" {
   type    = string
-  default = "personal"
+  default = "production"
 }

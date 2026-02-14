@@ -6,7 +6,7 @@ Last updated: 2026-02-14
 
 1. Usage scope: personal use first.
 2. Runtime: Docker.
-3. Environment model: single environment (`personal`).
+3. Environment model: single environment (`production`).
 4. Budget ceiling: 15 USD/month.
 5. Goal includes portfolio-quality public repository.
 

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-LIVE_DIR="$ROOT_DIR/infra/terraform/live/personal"
+LIVE_DIR="$ROOT_DIR/infra/terraform/live/production"
 BACKEND_FILE="$LIVE_DIR/backend.hcl"
 
 if ! command -v terraform >/dev/null 2>&1; then

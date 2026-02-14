@@ -1,8 +1,9 @@
 project_name   = "hello-my-oc"
-environment    = "personal"
+environment    = "production"
 aws_region     = "ap-northeast-2"
 instance_type  = "t4g.small"
 volume_size_gb = 20
+subnet_id      = ""
 cpu_high_threshold       = 80
 cpu_credit_low_threshold = 20
 alarm_sns_topic_arn      = ""

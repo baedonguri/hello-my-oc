@@ -12,7 +12,7 @@ Last updated: 2026-02-14
 ## Non-Functional
 
 - Budget target: up to 15 USD/month.
-- Single environment only (`personal`).
+- Single environment only (`production`).
 - Repository should be publicly shareable as portfolio.
 - Default network posture should be private-first.
 

@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BOOTSTRAP_DIR="$ROOT_DIR/infra/terraform/bootstrap"
-LIVE_DIR="$ROOT_DIR/infra/terraform/live/personal"
+LIVE_DIR="$ROOT_DIR/infra/terraform/live/production"
 BACKEND_FILE="$LIVE_DIR/backend.hcl"
 
 cd "$BOOTSTRAP_DIR"

@@ -38,14 +38,70 @@ variable "volume_size_gb" {
   }
 }
 
-variable "subnet_id" {
-  description = "Subnet ID for EC2 placement. Empty means auto-select."
+variable "vpc_cidr" {
+  description = "CIDR block for VPC."
+  type        = string
+  default     = "10.42.0.0/16"
+
+  validation {
+    condition     = can(cidrnetmask(var.vpc_cidr))
+    error_message = "vpc_cidr must be a valid CIDR block."
+  }
+}
+
+variable "public_subnet_cidr" {
+  description = "CIDR block for public subnet."
+  type        = string
+  default     = "10.42.1.0/24"
+
+  validation {
+    condition     = can(cidrnetmask(var.public_subnet_cidr))
+    error_message = "public_subnet_cidr must be a valid CIDR block."
+  }
+}
+
+variable "availability_zone" {
+  description = "Availability zone for the public subnet. Empty picks first available."
   type        = string
   default     = ""
 
   validation {
-    condition     = var.subnet_id == "" || can(regex("^subnet-[a-z0-9]+$", var.subnet_id))
-    error_message = "subnet_id must be empty or a valid subnet ID like subnet-abc12345."
+    condition     = var.availability_zone == "" || can(regex("^[a-z]{2}-[a-z]+-[0-9][a-z]$", var.availability_zone))
+    error_message = "availability_zone must be empty or a valid zone like ap-northeast-2a."
+  }
+}
+
+variable "enable_ssm_vpc_endpoints" {
+  description = "Create VPC interface endpoints for SSM connectivity without public IP."
+  type        = bool
+  default     = false
+}
+
+variable "associate_public_ip_address" {
+  description = "Whether to assign a public IPv4 address to the EC2 instance."
+  type        = bool
+  default     = true
+}
+
+variable "key_name" {
+  description = "EC2 key pair name used for SSH access."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.key_name == "" || can(regex("^[A-Za-z0-9._-]+$", var.key_name))
+    error_message = "key_name must be empty or a valid EC2 key pair name."
+  }
+}
+
+variable "ssh_ingress_cidr" {
+  description = "Operator CIDR allowed for SSH (22/tcp), e.g. 203.0.113.10/32."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.ssh_ingress_cidr == "" || can(cidrnetmask(var.ssh_ingress_cidr))
+    error_message = "ssh_ingress_cidr must be empty or a valid CIDR block."
   }
 }
 

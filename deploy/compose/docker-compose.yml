@@ -1,6 +1,6 @@
 services:
   openclaw-gateway:
-    image: ghcr.io/openclaw/openclaw:latest
+    image: ${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:2026.2.13}
     container_name: openclaw-gateway
     restart: unless-stopped
     env_file:

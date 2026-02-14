@@ -1,4 +1,4 @@
-.PHONY: fmt validate preflight plan apply
+.PHONY: fmt validate preflight plan apply deploy-openclaw
 
 TF_DIR ?= infra/terraform/live/production
 
@@ -17,3 +17,6 @@ plan:
 
 apply:
 	./scripts/tf_apply.sh
+
+deploy-openclaw:
+	./scripts/deploy_openclaw.sh

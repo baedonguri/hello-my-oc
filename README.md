@@ -39,7 +39,9 @@ This creates:
 - DynamoDB table for state locking.
 - `infra/terraform/live/production/backend.hcl`.
 
-### 2. Provision EC2 Infrastructure
+### 2. Configure And Provision EC2 Infrastructure
+
+Create `terraform.tfvars` once per local environment. Reuse it for later `make plan`, `make create`, and `make destroy` runs.
 
 ```bash
 cp infra/terraform/live/production/terraform.tfvars.example infra/terraform/live/production/terraform.tfvars
@@ -58,6 +60,8 @@ enable_ssm_vpc_endpoints    = false
 ```
 
 ### 3. Deploy OpenClaw
+
+`make create` provisions AWS infrastructure only. Deploy the OpenClaw container after EC2 is ready.
 
 Register the host key, then deploy:
 
@@ -158,6 +162,23 @@ Production variables live in `infra/terraform/live/production/terraform.tfvars`.
 | `enable_ssm_vpc_endpoints` | `false` | Keep disabled for minimum cost. |
 | `alarm_sns_topic_arn` | `""` | Optional CloudWatch notification target. |
 
+## Cost Notes
+
+In my personal usage, this setup has been around `$6/month` when the EC2 instance is not kept running for a full month.
+
+For a 24/7 on-demand deployment in `ap-northeast-2`, expect a higher baseline:
+
+| Resource | Approx. monthly cost |
+| --- | ---: |
+| EC2 `t4g.small` | `$12-15` |
+| EBS `gp3` 20 GB | `~$2` |
+| CloudWatch alarms | low, often free-tier covered |
+| S3 + DynamoDB Terraform backend | near zero for small state usage |
+
+This project avoids NAT Gateway and disables SSM VPC endpoints by default because those add fixed monthly cost.
+
+Use AWS Cost Explorer or the AWS Pricing Calculator for account-specific pricing. Actual costs vary by running hours, credits, free-tier coverage, and regional pricing changes.
+
 ## Telegram Integration
 
 1. Create a bot with Telegram `@BotFather`.
@@ -180,9 +201,6 @@ PUBLIC_IP="$(terraform -chdir=infra/terraform/live/production output -raw public
 
 # Terraform outputs
 terraform -chdir=infra/terraform/live/production output
-
-# Create or update the production EC2 stack
-make create AWS_PROFILE=your-profile AWS_REGION=ap-northeast-2
 
 # OpenClaw container status
 ssh -i /path/to/key.pem ubuntu@"$PUBLIC_IP" 'cd /opt/openclaw && docker compose ps'

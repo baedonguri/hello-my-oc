@@ -77,6 +77,11 @@ if [[ -z "$OPENCLAW_GATEWAY_TOKEN" ]]; then
   exit 1
 fi
 
+if [[ "$OPENCLAW_GATEWAY_TOKEN" =~ [[:space:]] ]]; then
+  echo "OPENCLAW_GATEWAY_TOKEN must not contain whitespace" >&2
+  exit 1
+fi
+
 if [[ ! -f "$KNOWN_HOSTS_PATH" ]]; then
   echo "known_hosts file not found: $KNOWN_HOSTS_PATH" >&2
   echo "Run: ssh-keyscan -H $TARGET_IP >> $KNOWN_HOSTS_PATH" >&2
@@ -103,13 +108,40 @@ chmod 600 "$KEY_PATH"
 
 SSH_OPTS=(-i "$KEY_PATH" -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$KNOWN_HOSTS_PATH")
 
-ssh "${SSH_OPTS[@]}" "ubuntu@$TARGET_IP" "sudo mkdir -p /opt/openclaw && sudo chown ubuntu:ubuntu /opt/openclaw"
+ssh "${SSH_OPTS[@]}" "ubuntu@$TARGET_IP" "sudo mkdir -p /opt/openclaw/data && sudo chown -R ubuntu:ubuntu /opt/openclaw && sudo chown -R 1000:1000 /opt/openclaw/data"
 scp "${SSH_OPTS[@]}" "$COMPOSE_FILE" "ubuntu@$TARGET_IP:/opt/openclaw/docker-compose.yml"
-scp "${SSH_OPTS[@]}" "$TMP_ENV" "ubuntu@$TARGET_IP:/opt/openclaw/.env"
+scp "${SSH_OPTS[@]}" "$TMP_ENV" "ubuntu@$TARGET_IP:/tmp/openclaw.env.deploy"
 
 ssh "${SSH_OPTS[@]}" "ubuntu@$TARGET_IP" '
   set -euo pipefail
   cd /opt/openclaw
+
+  touch .env
+  merge_env_var() {
+    key="$1"
+    value="$2"
+    file="$3"
+    tmp="$(mktemp)"
+
+    if grep -q "^${key}=" "$file"; then
+      awk -v k="$key" -v v="$value" '"'"'BEGIN { FS = "=" } $1 == k { print k "=" v; next } { print }'"'"' "$file" > "$tmp"
+    else
+      cp "$file" "$tmp"
+      printf "%s=%s\n" "$key" "$value" >> "$tmp"
+    fi
+
+    mv "$tmp" "$file"
+  }
+
+  image_value="$(sed -n "s/^OPENCLAW_IMAGE=//p" /tmp/openclaw.env.deploy | tail -n 1)"
+  gateway_token_value="$(sed -n "s/^OPENCLAW_GATEWAY_TOKEN=//p" /tmp/openclaw.env.deploy | tail -n 1)"
+
+  merge_env_var "OPENCLAW_IMAGE" "$image_value" .env
+  merge_env_var "OPENCLAW_GATEWAY_TOKEN" "$gateway_token_value" .env
+  merge_env_var "OPENCLAW_AUTH_TOKEN" "$gateway_token_value" .env
+  merge_env_var "OPENCLAW_PORT" "18789" .env
+  rm -f /tmp/openclaw.env.deploy
+
   if ! docker compose version >/dev/null 2>&1; then
     sudo apt-get update -y
     sudo apt-get install -y docker-compose-v2 || sudo apt-get install -y docker-compose-plugin
@@ -133,3 +165,5 @@ ssh "${SSH_OPTS[@]}" "ubuntu@$TARGET_IP" '
 '
 
 echo "OpenClaw deployed on $TARGET_IP"
+echo "Open the dashboard through an SSH tunnel: ssh -fN -L 18789:127.0.0.1:18789 -i <key> ubuntu@$TARGET_IP"
+echo "Run CLI commands on EC2 with: cd /opt/openclaw && docker compose run --rm openclaw-cli <command>"

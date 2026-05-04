@@ -6,6 +6,8 @@ services:
     env_file:
       - .env
     network_mode: host
+    volumes:
+      - ./data:/home/node/.openclaw
     healthcheck:
       test:
         [
@@ -17,3 +19,13 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
+
+  openclaw-cli:
+    image: ${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:2026.2.13}
+    entrypoint: ["node", "dist/index.js"]
+    env_file:
+      - .env
+    network_mode: host
+    profiles: ["cli"]
+    volumes:
+      - ./data:/home/node/.openclaw

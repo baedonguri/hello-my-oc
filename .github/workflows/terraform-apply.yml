@@ -10,8 +10,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
       - name: Terraform init (no backend)
-        run: terraform -chdir=infra/terraform/live/personal init -backend=false
+        run: terraform -chdir=infra/terraform/live/production init -backend=false
       - name: Terraform validate
-        run: terraform -chdir=infra/terraform/live/personal validate
+        run: terraform -chdir=infra/terraform/live/production validate
       - name: Placeholder
         run: echo "Apply will be enabled after AWS auth and backend wiring are configured."

@@ -1,4 +1,4 @@
-.PHONY: fmt validate preflight plan apply destroy deploy-openclaw
+.PHONY: fmt validate preflight plan apply create destroy deploy-openclaw
 
 TF_DIR ?= infra/terraform/live/production
 TF_VALIDATE_DATA_DIR ?= /tmp/hello-my-oc-tf-validate
@@ -30,6 +30,8 @@ plan:
 
 apply:
 	./scripts/tf_apply.sh
+
+create: apply
 
 destroy:
 	./scripts/tf_destroy.sh

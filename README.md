@@ -44,8 +44,8 @@ This creates:
 ```bash
 cp infra/terraform/live/production/terraform.tfvars.example infra/terraform/live/production/terraform.tfvars
 vi infra/terraform/live/production/terraform.tfvars
-./scripts/tf_plan.sh
-./scripts/tf_apply.sh
+make plan AWS_PROFILE=your-profile AWS_REGION=ap-northeast-2
+make create AWS_PROFILE=your-profile AWS_REGION=ap-northeast-2
 ```
 
 Minimum variables to check:
@@ -180,6 +180,9 @@ PUBLIC_IP="$(terraform -chdir=infra/terraform/live/production output -raw public
 
 # Terraform outputs
 terraform -chdir=infra/terraform/live/production output
+
+# Create or update the production EC2 stack
+make create AWS_PROFILE=your-profile AWS_REGION=ap-northeast-2
 
 # OpenClaw container status
 ssh -i /path/to/key.pem ubuntu@"$PUBLIC_IP" 'cd /opt/openclaw && docker compose ps'

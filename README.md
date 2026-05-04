@@ -193,6 +193,18 @@ ssh -i /path/to/key.pem ubuntu@"$PUBLIC_IP" 'cd /opt/openclaw && docker compose 
 
 If the dashboard reports `device token mismatch`, clear site data for `127.0.0.1:18789`, restart the tunnel, and enter the current gateway token again.
 
+## Teardown
+
+Destroy the production EC2 stack:
+
+```bash
+make destroy AWS_PROFILE=your-profile AWS_REGION=ap-northeast-2
+```
+
+This removes the OpenClaw runtime infrastructure managed by `infra/terraform/live/production`, including EC2, networking, IAM attachment/profile resources, and CloudWatch alarms.
+
+The Terraform state backend is intentionally not destroyed by this command. The S3 state bucket and DynamoDB lock table are protected with `prevent_destroy` because deleting them can break state recovery.
+
 ## Security Notes
 
 - Runtime secrets are not committed and are not managed by Terraform state.

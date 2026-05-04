@@ -1,7 +1,19 @@
-.PHONY: fmt validate preflight plan apply deploy-openclaw
+.PHONY: fmt validate preflight plan apply destroy deploy-openclaw
 
 TF_DIR ?= infra/terraform/live/production
 TF_VALIDATE_DATA_DIR ?= /tmp/hello-my-oc-tf-validate
+
+ifdef AWS_PROFILE
+export AWS_PROFILE
+endif
+
+ifdef AWS_REGION
+export AWS_REGION
+endif
+
+ifdef AWS_DEFAULT_REGION
+export AWS_DEFAULT_REGION
+endif
 
 fmt:
 	terraform -chdir=$(TF_DIR) fmt -recursive
@@ -18,6 +30,9 @@ plan:
 
 apply:
 	./scripts/tf_apply.sh
+
+destroy:
+	./scripts/tf_destroy.sh
 
 deploy-openclaw:
 	./scripts/deploy_openclaw.sh
